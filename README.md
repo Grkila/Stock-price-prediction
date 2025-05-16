@@ -2,7 +2,7 @@
 
 This MATLAB script performs technical analysis on financial time series data. It loads stock data, calculates various common technical indicators, normalizes selected indicators, and prepares input features and output labels, likely for use in machine learning models for price prediction or analysis.
 
-The script appears to be tailored for data from the Belgrade Stock Exchange (BELEX), specifically using a file named `belex-arhiva-NIIS.csv`.
+The script is tailored for data from the Belgrade Stock Exchange (BELEX), specifically using a file named `belex-arhiva-NIIS.csv`.
 
 ## Features
 
