@@ -129,16 +129,3 @@ The generated `combined_input` (features) and `combined_output` (targets) are we
 *   Quantitative trading strategy development.
 *   Financial market analysis and research.
 
-## Contributing
-
-Feel free to fork this repository, make improvements, and submit pull requests. Suggestions for enhancements include:
-
-*   Parameterizing file names and column names.
-*   Adding more technical indicators.
-*   Implementing more sophisticated normalization techniques.
-*   Adding error handling and data validation.
-*   Including plotting functionalities for visualization.
-
-## License
-
-Consider adding a license file (e.g., MIT, Apache 2.0) to define how others can use your code.
