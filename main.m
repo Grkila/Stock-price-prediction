@@ -1,0 +1,114 @@
+% Load data from 'belex15.mat'
+ tabelaulaz = importfile("belex-arhiva-NIIS.csv", [2, Inf]);
+ tabela=flipud(tabelaulaz)
+ Datumtrgovanja = tabela.Datum_trgovanja;
+    Cena = tabela.Cena;
+    Promena = tabela.Promena;
+    Promet = tabela.Promet;
+    Open = tabela.Open;
+    Min = tabela.Min;
+    Max = tabela.Max;
+    Vrednost=tabela.Cena
+n = 7; % Adjusted Momentum Period
+kPeriod = 9; % Adjusted Period for %K calculation
+dPeriod = 3; % Adjusted Period for %D calculation
+shortPeriod = 10;  % Adjusted short period for EMA
+longPeriod = 20;   % Adjusted long period for EMA
+signalPeriod = 9;  % Adjusted period for the signal line
+period = 14; % Adjusted Period for CCI calculation
+
+movingAvg = movmean(Vrednost, 10);
+
+% Calculate Momentum
+momentum = [zeros(n, 1); Vrednost(n+1:end) - Vrednost(1:end-n)];
+
+% Calculate %K and %D for Stochastic Oscillator
+stochasticK = zeros(length(Vrednost), 1);
+for i = kPeriod:length(Vrednost)
+    highestHigh = max(Max(i-kPeriod+1:i));
+    lowestLow = min(Min(i-kPeriod+1:i));
+    stochasticK(i) = ((Vrednost(i) - lowestLow) / (highestHigh - lowestLow)) * 100;
+end
+
+stochasticD = movmean(stochasticK, dPeriod);
+
+% Calculate RSI
+priceChanges = diff(Vrednost);
+gains = max(priceChanges, 0);
+losses = -min(priceChanges, 0);
+
+avgGain = mean(gains(1:n));
+avgLoss = mean(losses(1:n));
+RSI = zeros(length(Vrednost), 1);
+
+for i = n+1:length(priceChanges)
+    avgGain = (avgGain * (n - 1) + gains(i)) / n;
+    avgLoss = (avgLoss * (n - 1) + losses(i)) / n;
+    RS = avgGain / avgLoss;
+    RSI(i + 1) = 100 - (100 / (1 + RS));
+end
+
+% Calculate EMAs for MACD
+shortEMA = calculateEMA(Vrednost, shortPeriod);
+longEMA = calculateEMA(Vrednost, longPeriod);
+MACDLine = shortEMA - longEMA;
+signalLine = calculateEMA(MACDLine, signalPeriod);
+MACDHistogram = MACDLine - signalLine;
+
+% Calculate CCI
+typicalPrices = (Max + Min + Vrednost) / 3;
+SMA = movmean(typicalPrices, period);
+MAD = movmad(typicalPrices, period);
+CCI = (typicalPrices - SMA) ./ (0.015 * MAD);
+
+% Calculate Larry Williams' %R
+highestHigh = movmax(Max, period);
+lowestLow = movmin(Min, period);
+RPercent = ((Vrednost - lowestLow) ./ (highestHigh - lowestLow)) * 100;
+
+% Normalize indicators to range [-1, 1]
+normalize = @(x) (x - min(x)) / (max(x) - min(x)) * 2 - 1;
+normalizedMomentum = normalize(momentum);
+normalizedRSI = normalize(RSI);
+normalizedSMA = normalize(SMA);
+normalizedMAD = normalize(MAD);
+normalizedCCI = normalize(CCI);
+normalizedLarryWilliamsR = normalize(RPercent);
+
+% Create output labels
+n = length(Max);
+
+% Initialize the output array
+newArray = zeros(1, n-4);
+
+% Loop through the array and find the maximum of each 5-value segment
+for i = 1:n-4
+    izlazMAX(i) = max(Max(i:i+4));
+end
+izlaz1=izlazMAX.';
+% Create output labels
+n = length(Min);
+
+% Initialize the output array
+newArray = zeros(1, n-4);
+
+% Loop through the array and find the maximum of each 5-value segment
+for i = 1:n-4
+    izlazMIN(i) = min(Min(i:i+4));
+end
+izlaz2=izlazMIN.';
+combined_output=[izlaz1,izlaz2];
+
+
+% Combine normalized data
+combined_data = [normalizedMomentum, normalizedRSI, normalizedSMA, normalizedMAD, normalizedLarryWilliamsR];
+combined_input=combined_data(1:3355,:);
+% Function for EMA calculation
+function EMA = calculateEMA(data, period)
+    alpha = 2 / (period + 1);
+    EMA = zeros(size(data));
+    EMA(period) = mean(data(1:period));  
+    for i = period+1:length(data)
+        EMA(i) = (data(i) - EMA(i-1)) * alpha + EMA(i-1);
+    end
+end
